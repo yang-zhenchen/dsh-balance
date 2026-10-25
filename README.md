@@ -77,6 +77,8 @@ C. 用 VS Code 打开该文件，右下角编码选择 **Save with Encoding → 
 
 修复后重新启动 DSH 即可。其他 profile 把 `--profile desktop` 换成对应名字或目录。
 
+遇到其他启动问题，可以在 [issue #1](https://github.com/yang-zhenchen/dsh-balance/issues/1) 里补充日志。
+
 ## 卸载
 
 在插件页禁用或移除该 bundle；手动安装时执行：
