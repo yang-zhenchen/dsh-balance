@@ -33,11 +33,49 @@
 
 ```powershell
 git clone https://github.com/yang-zhenchen/dsh-balance.git
+cd dsh-balance
+node scripts/enable-bundle.mjs
 cd $env:USERPROFILE\.dsh\profiles\desktop
-pnpm add link:<克隆目录的绝对路径>
+pnpm install
 ```
 
-然后把 `"dsh-plugin-balance"` 追加到该 profile `package.json` 的 `dsh.profile.bundles` 数组，DSH 会热重组配置，无需重启。
+`enable-bundle.mjs` 只会把依赖和 `dsh.profile.bundles` 写进 profile 的 `package.json`（2 空格、无 BOM，并自动备份）。
+
+> ⚠️ 不要用 `ConvertTo-Json | Set-Content` 之类的命令手动重写 profile 的 `package.json`：Windows PowerShell 会写入 UTF-8 BOM，导致 DSH 启动时 `JSON.parse` 失败、客户端直接打不开。已经遇到的话见下面的「启动失败」一节。
+
+## 启动失败：`Unexpected token '﻿' ... is not valid JSON`
+
+**症状**：双击 DSH 客户端没有界面，日志里出现：
+
+```text
+SyntaxError: Unexpected token '﻿', "﻿{ ... " is not valid JSON
+    at readProfileManifest (.../dsh-app-boot/lib/index.js)
+```
+
+**原因**：`~/.dsh/profiles/desktop/package.json` 被保存成了 **UTF-8 with BOM**。DSH 启动时会先读取这个 profile 清单，开头的 BOM 让 `JSON.parse` 直接失败，此时插件还完全没有加载——所以这不是插件运行时代码的问题。
+
+常见来源：用 Windows PowerShell 的 `ConvertTo-Json | Set-Content -Encoding utf8` 手动改配置，或用带 BOM 的编辑器保存。DSH 插件页安装写入的是 2 空格、无 BOM 的 JSON，不会产生 BOM。
+
+**修复（任选一种）**：
+
+A. PowerShell（不需要 Node）：
+
+```powershell
+$p = Join-Path $env:USERPROFILE '.dsh\profiles\desktop\package.json'
+$t = [System.IO.File]::ReadAllText($p)
+if ($t.Length -gt 0 -and $t[0] -eq [char]0xFEFF) { $t = $t.Substring(1) }
+[System.IO.File]::WriteAllText($p, $t, (New-Object System.Text.UTF8Encoding($false)))
+```
+
+B. 用本仓库的脚本（会先校验 JSON、再移除 BOM，并备份原文件）：
+
+```powershell
+node scripts/repair-profile.mjs
+```
+
+C. 用 VS Code 打开该文件，右下角编码选择 **Save with Encoding → UTF-8**（不要选 UTF-8 with BOM），保存后重启。
+
+修复后重新启动 DSH 即可。其他 profile 把 `--profile desktop` 换成对应名字或目录。
 
 ## 卸载
 

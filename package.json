@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-balance",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "DeepSeek account balance pinned one row above the account avatar in the DeepSeek Harness sidebar.",
   "type": "module",
   "main": "lib/index.js",
@@ -23,6 +23,7 @@
   },
   "files": [
     "lib",
+    "scripts",
     "cordis.patch.yml",
     "README.md",
     "LICENSE",
