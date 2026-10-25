@@ -1,0 +1,51 @@
+{
+  "name": "dsh-plugin-balance",
+  "version": "0.1.0",
+  "description": "DeepSeek account balance pinned one row above the account avatar in the DeepSeek Harness sidebar.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web"
+    }
+  },
+  "scripts": {
+    "test": "node test/smoke.mjs"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE",
+    "preview.png"
+  ],
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "plugin",
+    "balance",
+    "sidebar"
+  ],
+  "author": "yang-zhenchen",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yang-zhenchen/dsh-balance.git"
+  },
+  "homepage": "https://github.com/yang-zhenchen/dsh-balance#readme",
+  "bugs": {
+    "url": "https://github.com/yang-zhenchen/dsh-balance/issues"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.5"
+  }
+}

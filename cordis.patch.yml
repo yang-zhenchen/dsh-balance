@@ -1,0 +1,6 @@
+# Bundle layer for the sidebar balance row. Installing this package adds one
+# ordinary Loader row; its browser half registers into `sidebar.footer.action`,
+# the list seat rendered directly above the account/avatar row.
+- insert:
+    - id: ui-balance
+      name: 'dsh-plugin-balance'
