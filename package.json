@@ -1,7 +1,7 @@
 {
   "name": "dsh-plugin-balance",
-  "version": "0.1.1",
-  "description": "DeepSeek account balance pinned one row above the account avatar in the DeepSeek Harness sidebar.",
+  "version": "0.3.0",
+  "description": "DeepSeek account balance plus a token-activity heatmap (local sessions or account-wide platform usage) pinned above the account avatar in the DeepSeek Harness sidebar.",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -19,7 +19,7 @@
     }
   },
   "scripts": {
-    "test": "node test/smoke.mjs"
+    "test": "node test/smoke.mjs && node test/usage.mjs && node test/account.mjs && node test/host.mjs"
   },
   "files": [
     "lib",
@@ -34,6 +34,9 @@
     "deepseek-harness",
     "plugin",
     "balance",
+    "tokens",
+    "usage",
+    "heatmap",
     "sidebar"
   ],
   "author": "yang-zhenchen",
