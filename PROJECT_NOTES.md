@@ -1,6 +1,6 @@
 # dsh-balance 项目上下文
 
-给接手的 Agent（或未来的自己）看的速查。最后更新 2026-10-28，版本 **0.3.0**。
+给接手的 Agent（或未来的自己）看的速查。最后更新 2026-11-09，版本 **0.4.0**。
 
 ## 是什么
 
@@ -24,6 +24,8 @@ DSH 的 `desktop` profile 用 **link 方式**挂这个插件，不是从 npm 装
 ## 功能
 
 - 余额行：显示充值余额；有赠金时追加 `+¥x.xx`；页面可见时每 15 秒刷新；窗口聚焦、从后台返回、登录状态变化、点击该行都会立即刷新
+- 余额行金额前有 **峰时 / 谷时** 徽标；悬停看倒计时、切换时刻（北京时间）与规则摘要；用量面板页脚同一状态；本机小时图用淡色标出峰时区间
+- 峰谷规则（2026-09-10 起）：北京时间周一至周五 09:00–12:00、14:00–18:00 为峰时（法定节假日除外），其余时间谷时、价格为峰时 50%；节假日表内置 2026–2027，未覆盖年份按工作日估算
 - 未登录显示「未登录」，失败显示「点击重试」；悬停看充值/赠金/更新时间
 - 用量行：今日 token 总数（输入+输出+缓存读写），点击展开「Token 活动」面板
   - 53×7 日历热力图（quartile 分 4 档着色），月份刻度 + 图例
@@ -54,7 +56,7 @@ DSH 的 `desktop` profile 用 **link 方式**挂这个插件，不是从 npm 装
 | `lib/index.js` | Host 侧：`/dsh-balance/usage` 路由、会话索引、账号月份缓存（`ctx.inject(['webServer','connection','sessionQuery'])` + 嵌套 `credentials`） |
 | `lib/usage.js` | 纯函数：本机样本折叠、按日/小时聚合、`summarizeUsage`（Host 与测试共用，不依赖 DOM/Node） |
 | `lib/account.js` | 纯函数：平台 `usage/amount`+`cost` 解析、UTC 日聚合、自然月窗口、`AccountError` |
-| `lib/client.js` | 浏览器侧：`sidebar.footer.action` 的一个槽位项里竖向排列 usage + balance 两行，用量面板用 fixed + portal；带 本机/账号 切换 |
+| `lib/client.js` | 浏览器侧：`sidebar.footer.action` 的一个槽位项里竖向排列 usage + balance 两行，用量面板用 fixed + portal；带 本机/账号 切换；峰谷规则 / 节假日表 / 倒计时也在这一文件（无构建步骤，别拆成 import） |
 | `scripts/enable-bundle.mjs` | 开发用：把依赖和 `dsh.profile.bundles` 写进 profile（2 空格、无 BOM、自动备份） |
 | `scripts/repair-profile.mjs` | 修复 profile package.json 的 UTF-8 BOM |
 | `test/smoke.mjs` | 浏览器 bundle 冒烟：槽位注册、两行渲染、纯函数 |
@@ -91,6 +93,9 @@ pnpm install
   - 嵌套 `cap.inject(["credentials"], ...)` 拿 `cap.credentials.readRecord(...)`；账号记录键是 `deepseek-account-platform/default`
 - 用量样本的语义照抄 `@deepseek-ai/dsh-token-meter` 的 `tokenUsage` 投影：同一 turn/step 的最终样本替换流式样本，`llm/retry-started` 重开槽位；`compaction/summary` 额外计入。差异：我们保留了每条样本的时间戳用于按日/小时分桶，所以**没有**复用投影（投影只给全量累计）。
 - Fork/子代理会话要跳过 `inheritedEventCount`，否则父会话的用量会被重复计算。
+- 峰谷规则：`PEAK_WINDOWS` 是北京时间的半开区间 `[start, end)`（12:00、18:00 整已算谷时）；`HOLIDAYS` 只列**落在工作日**的节假日，周末本来全天谷时，所以调休上班的周末仍按官方「周末全天」口径算谷时。
+- 节假日表来自国务院办公厅 2026 / 2027 放假通知；2028 年通知通常 2027-11 才发布，覆盖不到时 `tariffStatus().covered === false`，UI 标注「按工作日估算」，届时补 `HOLIDAYS` 与 `HOLIDAY_YEARS` 即可。
+- 小时图的峰时底色只在浏览器时区为 UTC+8 时渲染（本机用量按浏览器 offset 分桶，其他时区会和北京时间窗口错位）；徽标与倒计时任何时候都按北京时间算。
 - 账号源：平台用量接口只认 `x-dsh-auth-token`（Bearer 会 40003）；口径是 UTC 日 vs 本地日，所以面板明确标「今日（UTC）」且账号视图不显示小时图。
 - 浏览器端 `fetch("dsh-balance/usage?days=371&offset=...&source=local|account")` 用相对路径（和 `host-open-in-app` 同款），相对页面根解析；cookie 由 `credentials: "same-origin"` 带上。
 - Client HMR 只在 `pnpm run dev:web` 运行时才会自动重建；普通桌面安装重启 DSH 最稳。
@@ -105,5 +110,7 @@ pnpm install
 ## 待办
 
 - 没有明确的待办；启动相关的问题汇总在 [issue #1](https://github.com/yang-zhenchen/dsh-balance/issues/1)。
+- 2027-11 国务院发布 2028 年放假安排后，补 `HOLIDAYS` 与 `HOLIDAY_YEARS`（只列落在工作日的节假日）。
+- 如果 DeepSeek 再改峰谷规则或价格，只需改 `PEAK_WINDOWS` / `HOLIDAYS` 和文案，不用动聚合逻辑。
 - 用量索引目前每次 DSH 启动后重建（读一遍全部会话，然后实时增量）；数据量大时可以缓存到 `ctx.storage`，按会话 revision 失效。
 - 账号源可继续增强：用 `/api/v0/usage/export` 的窗口导出把 UTC 日换算成本地「今日」；按模型拆分（amount 的 `total[]` 已经有模型维度）；近 30 天费用（目前只取当月 cost）。

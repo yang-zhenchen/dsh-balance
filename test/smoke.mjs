@@ -27,6 +27,8 @@ const ctx = {
         failed: '余额读取失败',
         signedOutHint: '登录 DeepSeek 账号后可查看余额',
         usageLabel: 'Token 用量',
+        tariffPeak: '峰时',
+        tariffOff: '谷时',
       })[key] ?? key,
     getSnapshot: () => ({ active: 'zh', revision: 0 }),
     subscribe: () => () => {},
@@ -127,8 +129,14 @@ const balanceOuter = container.children[1];
 const balanceElement = balanceOuter.type(balanceOuter.props);
 assert.equal(balanceElement.type, 'button');
 assert.equal(balanceElement.props['data-balance-phase'], 'loading');
+assert.ok(['peak', 'off-peak'].includes(balanceElement.props['data-tariff-period']), 'the row states the price period');
 assert.equal(balanceElement.children[0].children[0], '余额');
-assert.equal(balanceElement.children[1].children[0].children[0], '—');
+const balanceAmounts = balanceElement.children[1];
+assert.equal(balanceAmounts.children[0].props.className, 'dsb_phase');
+assert.equal(balanceAmounts.children[0].props['data-period'], balanceElement.props['data-tariff-period']);
+assert.ok(['峰时', '谷时'].includes(balanceAmounts.children[0].children[0]), 'the badge names the period');
+assert.equal(balanceAmounts.children[1].children[0], '—');
+assert.ok(balanceElement.props.title.includes('tariffRuleShort'), 'the tooltip explains the price period');
 
 const collapsed = registration.component({ wide: false });
 assert.equal(collapsed.type(collapsed.props), null);
@@ -216,6 +224,10 @@ const {
   levelThresholds,
   levelOf,
   calendarMonths,
+  tariffStatus,
+  isPeakAt,
+  formatCountdown,
+  switchClock,
 } = exportsObject.__test;
 assert.equal(formatAmount('12.345', '¥'), '¥12.34');
 assert.equal(formatAmount('0.004', '¥'), '<¥0.01');
@@ -307,6 +319,50 @@ assert.deepEqual(usageBucket({ total: 5, input: '7' }), {
   for (let index = 1; index < months.length; index += 1) {
     assert.ok(months[index].column - months[index - 1].column >= 3, 'labels never collide');
   }
+}
+
+// The price calendar: Beijing weekdays 09:00-12:00 / 14:00-18:00, holidays off.
+const bj = (year, month, day, hour, minute) => Date.UTC(year, month - 1, day, hour - 8, minute);
+{
+  assert.equal(isPeakAt(bj(2026, 11, 9, 10, 0)), true, 'Monday morning is peak');
+  assert.equal(isPeakAt(bj(2026, 11, 9, 12, 0)), false, 'the window is half-open at noon');
+  assert.equal(isPeakAt(bj(2026, 11, 9, 8, 59)), false, 'just before nine is off-peak');
+  assert.equal(isPeakAt(bj(2026, 11, 7, 10, 0)), false, 'Saturday is off-peak all day');
+  assert.equal(isPeakAt(bj(2026, 10, 1, 10, 0)), false, 'National Day is off-peak even on a Thursday');
+  assert.equal(isPeakAt(bj(2027, 1, 1, 10, 0)), false, 'New Year 2027 is off-peak even on a Friday');
+  assert.equal(isPeakAt(bj(2028, 1, 3, 10, 0)), true, 'an uncovered year falls back to the weekday rule');
+
+  const morning = tariffStatus(bj(2026, 11, 9, 10, 0));
+  assert.equal(morning.period, 'peak');
+  assert.equal(morning.nextSwitchAt, bj(2026, 11, 9, 12, 0), 'peak ends at noon');
+  assert.equal(morning.covered, true);
+  assert.equal(morning.holiday, false);
+  assert.ok(Array.isArray(morning.bands));
+
+  const lunch = tariffStatus(bj(2026, 11, 9, 12, 30));
+  assert.equal(lunch.period, 'off-peak');
+  assert.equal(lunch.nextSwitchAt, bj(2026, 11, 9, 14, 0), 'the afternoon peak starts at two');
+
+  const night = tariffStatus(bj(2026, 11, 9, 23, 0));
+  assert.equal(night.period, 'off-peak');
+  assert.equal(night.nextSwitchAt, bj(2026, 11, 10, 9, 0), 'the next flip is tomorrow morning');
+
+  const fridayNight = tariffStatus(bj(2026, 11, 6, 19, 0));
+  assert.equal(fridayNight.nextSwitchAt, bj(2026, 11, 9, 9, 0), 'the weekend pushes the flip to Monday');
+  assert.equal(fridayNight.msUntilSwitch, bj(2026, 11, 9, 9, 0) - bj(2026, 11, 6, 19, 0));
+
+  const holiday = tariffStatus(bj(2026, 10, 1, 10, 0));
+  assert.equal(holiday.holiday, true);
+  assert.equal(holiday.period, 'off-peak');
+  assert.equal(holiday.nextSwitchAt, bj(2026, 10, 8, 9, 0), 'the holiday week ends on the 8th');
+
+  const uncovered = tariffStatus(bj(2028, 1, 3, 10, 0));
+  assert.equal(uncovered.covered, false, 'the UI must disclose an uncovered holiday calendar');
+
+  assert.equal(formatCountdown(0, fakeT), 'tariffSoon');
+  assert.equal(formatCountdown(90_000, fakeT), 'tariffMinutes{"count":2}');
+  assert.equal(formatCountdown(133 * 60_000, fakeT), 'tariffHoursMinutes{"count":2,"minutes":13}');
+  assert.equal(switchClock(bj(2026, 11, 9, 12, 0)), '12:00');
 }
 
 console.log('smoke test: ok');
