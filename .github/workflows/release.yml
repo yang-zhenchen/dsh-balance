@@ -1,0 +1,72 @@
+# Publish @yangzhenchen/dsh-balance to npm with Trusted Publishing (OIDC).
+#
+# No npm token is stored anywhere: the job exchanges a short-lived GitHub OIDC
+# token for a one-time npm credential. The npm package must list this workflow
+# as a trusted publisher (npmjs.com -> package -> Settings -> Trusted Publisher):
+#   Organization or user: yang-zhenchen
+#   Repository:           dsh-balance
+#   Workflow filename:    release.yml
+#   Environment name:     (leave empty)
+#   Allowed actions:      npm publish  (direct publish; stage-only will not go live)
+#
+# Release: bump package.json, commit, then push a matching tag:
+#   git tag -a v0.4.3 -m "0.4.3" && git push origin main --tags
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: npm-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+          package-manager-cache: false
+
+      # Trusted publishing needs npm CLI >= 11.5.1; the runner image can lag.
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - name: Check the tag matches package.json
+        run: |
+          node -e '
+            const pkg = require("./package.json");
+            const tag = process.env.GITHUB_REF_NAME.replace(/^v/, "");
+            if (pkg.version !== tag) {
+              console.error(`tag v${tag} does not match package.json version ${pkg.version}`);
+              process.exit(1);
+            }
+            if (pkg.name !== "@yangzhenchen/dsh-balance") {
+              console.error(`unexpected package name ${pkg.name}`);
+              process.exit(1);
+            }
+          '
+
+      - name: Run tests
+        run: |
+          for file in test/*.mjs; do
+            echo "== $file"
+            node "$file"
+          done
+
+      - name: Inspect the package contents
+        run: npm pack --dry-run
+
+      # OIDC is detected automatically; no NODE_AUTH_TOKEN is configured.
+      - name: Publish
+        run: npm publish --access public --provenance

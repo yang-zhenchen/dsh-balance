@@ -103,7 +103,8 @@ pnpm install
 - **千万不要**用 `ConvertTo-Json | Set-Content` 改 profile 的 `package.json`：Windows PowerShell 会写 BOM，DSH 启动时 `JSON.parse` 直接失败、界面打不开。用 `.NET` 的 `UTF8Encoding($false)` 或 `scripts/repair-profile.mjs`。
 - 改 profile 后要 `pnpm install`（或手工维护 junction），否则依赖解析不到。
 - 重启 DSH 后如果行消失，先看 `~/.dsh/profiles/desktop/package.json` 是否可解析、`node_modules/@yangzhenchen/dsh-balance` 是否指向正确目录。
-- 发版：`npm version patch` → `git push origin main --tags` → `pnpm publish --access public`；客户端插件页刷新后出现「可更新到 x.y.z」，一键更新（失败自动回滚）。git/link 安装没有这个版本区块。
+- 发版：改 `package.json` 版本 → `git tag -a vX.Y.Z -m "X.Y.Z" && git push origin main --tags` → GitHub Actions（`.github/workflows/release.yml`，Trusted Publishing/OIDC，无需 token）发布。客户端插件页刷新后出现「可更新到 x.y.z」，一键更新（失败自动回滚）。git/link 安装没有这个版本区块。
+- Trusted Publisher 一次性配置在 npmjs.com 的包设置里：workflow 必须写 `release.yml`，Allowed actions 要勾 **npm publish**；只勾 stage publish 的话发布只会进 staging，得人工批准。
 
 ## 网络
 

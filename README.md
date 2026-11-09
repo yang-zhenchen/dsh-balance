@@ -112,12 +112,24 @@ GitHub / link 安装不会有一键更新（DSH 的版本区块只覆盖 registr
 
 ## 发布
 
-1. 改版本：`npm version patch`（或手改 `package.json` 的 `version`）并提交。
-2. 打标签并推送：`git tag -a v0.5.0 -m "0.5.0"; git push origin main --tags`
-3. 发布到 npm：`pnpm publish --access public`
-4. 客户端在插件页点**刷新**，就能看到「可更新到 0.5.0」。
+发布走 GitHub Actions + **Trusted Publishing（OIDC）**，不需要长期 npm token：
 
-包名固定为 `@yangzhenchen/dsh-balance`（`publishConfig.access` 已设为 `public`）；`dsh-plugin-balance` 是别人的包，不要用它发布。
+1. 改版本：手改 `package.json` 的 `version`（例如 0.4.3），提交并推送 `main`。
+2. 打标签并推送：`git tag -a v0.4.3 -m "0.4.3"; git push origin main --tags`
+3. GitHub Actions（[`.github/workflows/release.yml`](.github/workflows/release.yml)）会用 OIDC 临时凭证发布到 npm；它先校验 tag 与 `package.json` 版本一致、跑完四组测试，再 `npm publish --access public --provenance`。
+4. 客户端在插件页点**刷新**，就能看到「可更新到 0.4.3」。
+
+**一次性配置**（只需做一次）：npmjs.com → 包 `@yangzhenchen/dsh-balance` → Settings → **Trusted Publisher** → GitHub Actions：
+
+| 字段 | 值 |
+| --- | --- |
+| Organization or user | `yang-zhenchen` |
+| Repository | `dsh-balance` |
+| Workflow filename | `release.yml` |
+| Environment name | 留空 |
+| Allowed actions | 勾上 **npm publish**（只留 stage publish 的话不会直接上线） |
+
+配好后旧 token 可以全部删掉。包名固定为 `@yangzhenchen/dsh-balance`（`publishConfig.access` 已设为 `public`）；`dsh-plugin-balance` 是别人的包，不要用它发布。
 
 ## 启动失败：`Unexpected token '﻿' ... is not valid JSON`
 
