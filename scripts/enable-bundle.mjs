@@ -12,7 +12,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /** The published package name; it is also the Loader module name. */
-const PACKAGE = '@yang-zhenchen/dsh-balance';
+const PACKAGE = '@yangzhenchen/dsh-balance';
 
 function fail(message) {
   console.error(message);
@@ -46,14 +46,15 @@ if (manifest === null || typeof manifest !== 'object' || Array.isArray(manifest)
 }
 
 const spec = `link:${pluginDir.replaceAll('\\', '/')}`;
+const OLD_NAMES = ['dsh-plugin-balance', '@yang-zhenchen/dsh-balance'];
 manifest.dependencies = manifest.dependencies ?? {};
-// The package used to be published as `dsh-plugin-balance`; drop that stale
-// dependency and bundle entry so a rename migrates in place.
-delete manifest.dependencies['dsh-plugin-balance'];
+// Drop stale dependency keys and bundle entries from earlier package names so
+// a rename migrates in place.
+for (const name of OLD_NAMES) delete manifest.dependencies[name];
 manifest.dependencies[PACKAGE] = spec;
 manifest.dsh = manifest.dsh ?? {};
 manifest.dsh.profile = manifest.dsh.profile ?? {};
-manifest.dsh.profile.bundles = (Array.isArray(manifest.dsh.profile.bundles) ? manifest.dsh.profile.bundles : []).filter((name) => name !== 'dsh-plugin-balance');
+manifest.dsh.profile.bundles = (Array.isArray(manifest.dsh.profile.bundles) ? manifest.dsh.profile.bundles : []).filter((name) => !OLD_NAMES.includes(name));
 if (!manifest.dsh.profile.bundles.includes(PACKAGE)) {
   manifest.dsh.profile.bundles.push(PACKAGE);
 }

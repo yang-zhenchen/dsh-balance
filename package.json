@@ -1,6 +1,6 @@
 {
-  "name": "@yang-zhenchen/dsh-balance",
-  "version": "0.4.1",
+  "name": "@yangzhenchen/dsh-balance",
+  "version": "0.4.2",
   "publishConfig": {
     "access": "public"
   },

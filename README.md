@@ -75,11 +75,11 @@
 ### 方式一：从 npm 安装（推荐，支持一键更新）
 
 1. 打开侧边栏的 **插件** 页。
-2. 在安装入口填入包名：`@yang-zhenchen/dsh-balance`
+2. 在安装入口填入包名：`@yangzhenchen/dsh-balance`
 3. 安装完成后确认已启用（安装默认启用）。
 4. 侧边栏底部就会出现 Token 用量行与余额行。
 
-> 包名是 `@yang-zhenchen/dsh-balance`。早期用 `dsh-plugin-balance` 或 GitHub 地址装过的，先卸载旧条目再装这个；npm 上的 `dsh-plugin-balance` 是另一个作者的项目，别装错。
+> 包名是 `@yangzhenchen/dsh-balance`。早期用 `dsh-plugin-balance` 或 GitHub 地址装过的，先卸载旧条目再装这个；npm 上的 `dsh-plugin-balance` 是另一个作者的项目，别装错。
 
 ### 方式二：从 GitHub 安装（备用）
 
@@ -117,7 +117,7 @@ GitHub / link 安装不会有一键更新（DSH 的版本区块只覆盖 registr
 3. 发布到 npm：`pnpm publish --access public`
 4. 客户端在插件页点**刷新**，就能看到「可更新到 0.5.0」。
 
-包名固定为 `@yang-zhenchen/dsh-balance`（`publishConfig.access` 已设为 `public`）；`dsh-plugin-balance` 是别人的包，不要用它发布。
+包名固定为 `@yangzhenchen/dsh-balance`（`publishConfig.access` 已设为 `public`）；`dsh-plugin-balance` 是别人的包，不要用它发布。
 
 ## 启动失败：`Unexpected token '﻿' ... is not valid JSON`
 
@@ -161,10 +161,10 @@ C. 用 VS Code 打开该文件，右下角编码选择 **Save with Encoding → 
 
 ```powershell
 cd $env:USERPROFILE\.dsh\profiles\desktop
-pnpm remove @yang-zhenchen/dsh-balance
+pnpm remove @yangzhenchen/dsh-balance
 ```
 
-并从 `dsh.profile.bundles` 中删除 `@yang-zhenchen/dsh-balance`。
+并从 `dsh.profile.bundles` 中删除 `@yangzhenchen/dsh-balance`。
 
 ## 实现
 

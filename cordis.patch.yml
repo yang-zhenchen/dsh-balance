@@ -3,4 +3,4 @@
 # the list seat rendered directly above the account/avatar row.
 - insert:
     - id: ui-balance
-      name: '@yang-zhenchen/dsh-balance'
+      name: '@yangzhenchen/dsh-balance'
