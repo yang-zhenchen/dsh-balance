@@ -35,7 +35,8 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
-          registry-url: "https://registry.npmjs.org"
+          # No registry-url on purpose: it writes an .npmrc with a placeholder
+          # _authToken, and npm then never falls back to the OIDC exchange.
           package-manager-cache: false
 
       # Trusted publishing needs npm CLI >= 11.5.1; the runner image can lag.
