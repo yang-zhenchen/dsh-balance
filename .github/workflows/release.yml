@@ -68,6 +68,13 @@ jobs:
       - name: Inspect the package contents
         run: npm pack --dry-run
 
+      - name: Check OIDC environment
+        run: |
+          echo "GITHUB_ACTIONS=${GITHUB_ACTIONS:-unset}"
+          echo "id-token-url: ${ACTIONS_ID_TOKEN_REQUEST_URL:+set}"
+          echo "id-token-request-token: ${ACTIONS_ID_TOKEN_REQUEST_TOKEN:+set}"
+          echo "npm version: $(npm --version)"
+
       # OIDC is detected automatically; no NODE_AUTH_TOKEN is configured.
       - name: Publish
-        run: npm publish --access public --provenance
+        run: npm publish --access public --provenance --loglevel verbose
