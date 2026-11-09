@@ -15,6 +15,7 @@ DSH 插件：侧边栏底部的 DeepSeek 余额行。
 
 ## 约定
 
-- 本机是 link 安装：`~/.dsh/profiles/desktop/package.json` 里 `link:D:/dshwork/dsh-balance`，`node_modules/dsh-plugin-balance` 是指向本目录的 junction。
+- 包名是 `@yang-zhenchen/dsh-balance`（npm 与 Loader 模块名一致）；`dsh-plugin-balance` 是别人在 npm 上的包，旧版曾用这个名字。
+- 本机是 link 安装：`~/.dsh/profiles/desktop/package.json` 里 `link:D:/dshwork/dsh-balance`，`node_modules/@yang-zhenchen/dsh-balance` 是指向本目录的 junction。
 - **不要**用 PowerShell 的 `ConvertTo-Json | Set-Content` 写 profile 的 `package.json`（会带 BOM，DSH 启动失败）。
 - 提交前跑一次 smoke test。

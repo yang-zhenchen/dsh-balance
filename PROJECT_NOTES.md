@@ -1,12 +1,13 @@
 # dsh-balance 项目上下文
 
-给接手的 Agent（或未来的自己）看的速查。最后更新 2026-11-09，版本 **0.4.0**。
+给接手的 Agent（或未来的自己）看的速查。最后更新 2026-11-09，版本 **0.4.1**（npm 包名 `@yang-zhenchen/dsh-balance`）。
 
 ## 是什么
 
 DeepSeek Harness（DSH）插件：把 **DeepSeek 账户余额**固定在侧边栏底部、账号头像的**正上方一行**；再往上一行是 **Token 用量**，点开是 GitHub 贡献图样式的 53 周热力图（每天 / 每周 / 累计总量），可在 **本机 / 账号** 两个数据源之间切换。浏览器端只拿余额数字和聚合后的用量，账户 token 与原始会话日志都留在 Host。
 
 - 仓库：https://github.com/yang-zhenchen/dsh-balance
+- npm：`@yang-zhenchen/dsh-balance`（`publishConfig.access = public`；`dsh-plugin-balance` 已被别的作者占用，别用）
 - 本地：`D:\dshwork\dsh-balance`（工作区「DSH 余额」）
 - 许可：MIT
 
@@ -15,8 +16,8 @@ DeepSeek Harness（DSH）插件：把 **DeepSeek 账户余额**固定在侧边�
 DSH 的 `desktop` profile 用 **link 方式**挂这个插件，不是从 npm 装的：
 
 - `~/.dsh/profiles/desktop/package.json`：
-  `"dsh-plugin-balance": "link:D:/dshwork/dsh-balance"`
-- `~/.dsh/profiles/desktop/node_modules/dsh-plugin-balance` → 指向 `D:\dshwork\dsh-balance` 的 Junction
+  `"@yang-zhenchen/dsh-balance": "link:D:/dshwork/dsh-balance"`
+- `~/.dsh/profiles/desktop/node_modules/@yang-zhenchen/dsh-balance` → 指向 `D:\dshwork\dsh-balance` 的 Junction
 - 移动前备份：`~/.dsh/profiles/desktop/package.json.bak-before-move`
 
 改完代码后不需要重新安装；`lib/client.js` 可由 Client HMR 热更新，**改 `lib/index.js` / `lib/usage.js` / `lib/account.js` 必须重启 DSH**。
@@ -101,7 +102,8 @@ pnpm install
 - Client HMR 只在 `pnpm run dev:web` 运行时才会自动重建；普通桌面安装重启 DSH 最稳。
 - **千万不要**用 `ConvertTo-Json | Set-Content` 改 profile 的 `package.json`：Windows PowerShell 会写 BOM，DSH 启动时 `JSON.parse` 直接失败、界面打不开。用 `.NET` 的 `UTF8Encoding($false)` 或 `scripts/repair-profile.mjs`。
 - 改 profile 后要 `pnpm install`（或手工维护 junction），否则依赖解析不到。
-- 重启 DSH 后如果行消失，先看 `~/.dsh/profiles/desktop/package.json` 是否可解析、`node_modules/dsh-plugin-balance` 是否指向正确目录。
+- 重启 DSH 后如果行消失，先看 `~/.dsh/profiles/desktop/package.json` 是否可解析、`node_modules/@yang-zhenchen/dsh-balance` 是否指向正确目录。
+- 发版：`npm version patch` → `git push origin main --tags` → `pnpm publish --access public`；客户端插件页刷新后出现「可更新到 x.y.z」，一键更新（失败自动回滚）。git/link 安装没有这个版本区块。
 
 ## 网络
 

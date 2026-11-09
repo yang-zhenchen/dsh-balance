@@ -11,6 +11,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+/** The published package name; it is also the Loader module name. */
+const PACKAGE = '@yang-zhenchen/dsh-balance';
+
 function fail(message) {
   console.error(message);
   process.exit(1);
@@ -44,19 +47,22 @@ if (manifest === null || typeof manifest !== 'object' || Array.isArray(manifest)
 
 const spec = `link:${pluginDir.replaceAll('\\', '/')}`;
 manifest.dependencies = manifest.dependencies ?? {};
-manifest.dependencies['dsh-plugin-balance'] = spec;
+// The package used to be published as `dsh-plugin-balance`; drop that stale
+// dependency and bundle entry so a rename migrates in place.
+delete manifest.dependencies['dsh-plugin-balance'];
+manifest.dependencies[PACKAGE] = spec;
 manifest.dsh = manifest.dsh ?? {};
 manifest.dsh.profile = manifest.dsh.profile ?? {};
-manifest.dsh.profile.bundles = Array.isArray(manifest.dsh.profile.bundles) ? manifest.dsh.profile.bundles : [];
-if (!manifest.dsh.profile.bundles.includes('dsh-plugin-balance')) {
-  manifest.dsh.profile.bundles.push('dsh-plugin-balance');
+manifest.dsh.profile.bundles = (Array.isArray(manifest.dsh.profile.bundles) ? manifest.dsh.profile.bundles : []).filter((name) => name !== 'dsh-plugin-balance');
+if (!manifest.dsh.profile.bundles.includes(PACKAGE)) {
+  manifest.dsh.profile.bundles.push(PACKAGE);
 }
 
 const backup = `${file}.bak-${Date.now()}`;
 fs.copyFileSync(file, backup);
 fs.writeFileSync(file, `${JSON.stringify(manifest, void 0, 2)}\n`, 'utf8');
 console.log(`已写入：${file}`);
-console.log(`依赖：dsh-plugin-balance => ${spec}`);
-console.log(`bundle：dsh-plugin-balance`);
+console.log(`依赖：${PACKAGE} => ${spec}`);
+console.log(`bundle：${PACKAGE}`);
 console.log(`备份：${backup}`);
 console.log(`下一步：cd "${profileDir}" 然后运行 pnpm install`);

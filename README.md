@@ -72,15 +72,21 @@
 
 ## 安装
 
-### 方式一：在 DSH 插件页安装（推荐）
+### 方式一：从 npm 安装（推荐，支持一键更新）
 
 1. 打开侧边栏的 **插件** 页。
-2. 在安装入口填入仓库地址：`https://github.com/yang-zhenchen/dsh-balance`
-   （也接受 `github:yang-zhenchen/dsh-balance` 这种 pnpm 写法。）
-3. 安装完成后确认 `dsh-plugin-balance` 已启用（安装默认启用）。
+2. 在安装入口填入包名：`@yang-zhenchen/dsh-balance`
+3. 安装完成后确认已启用（安装默认启用）。
 4. 侧边栏底部就会出现 Token 用量行与余额行。
 
-### 方式二：手动 link（适合改代码）
+> 包名是 `@yang-zhenchen/dsh-balance`。早期用 `dsh-plugin-balance` 或 GitHub 地址装过的，先卸载旧条目再装这个；npm 上的 `dsh-plugin-balance` 是另一个作者的项目，别装错。
+
+### 方式二：从 GitHub 安装（备用）
+
+在插件页填入 `https://github.com/yang-zhenchen/dsh-balance`（也接受 `github:yang-zhenchen/dsh-balance`）。
+这种方式能用，但**没有一键更新**——DSH 的「可更新到 …」只对 npm registry 安装的包生效，git 安装每次都要卸载后重装。
+
+### 方式三：手动 link（适合改代码）
 
 ```powershell
 git clone https://github.com/yang-zhenchen/dsh-balance.git
@@ -90,9 +96,28 @@ cd $env:USERPROFILE\.dsh\profiles\desktop
 pnpm install
 ```
 
-`enable-bundle.mjs` 只会把依赖和 `dsh.profile.bundles` 写进 profile 的 `package.json`（2 空格、无 BOM，并自动备份）。
+`enable-bundle.mjs` 只会把依赖和 `dsh.profile.bundles` 写进 profile 的 `package.json`（2 空格、无 BOM，并自动备份）；它会把旧的 `dsh-plugin-balance` 依赖和 bundle 条目一并换成新包名。
 
 > ⚠️ 不要用 `ConvertTo-Json | Set-Content` 之类的命令手动重写 profile 的 `package.json`：Windows PowerShell 会写入 UTF-8 BOM，导致 DSH 启动时 `JSON.parse` 失败、客户端直接打不开。已经遇到的话见下面的「启动失败」一节。
+
+## 更新
+
+装的是 npm 包（方式一）时，DSH 会自己检查新版本：
+
+1. 侧边栏 → **插件**：列表顶部提示「N 个插件可更新」，卡片上带「可更新」标签。
+2. 点开该插件 → **版本** 区块显示可安装的新版本 → **更新**。安装失败会自动回滚到原版本。
+3. 没有开 HMR 的 profile 会提示重启，重启后生效。
+
+GitHub / link 安装不会有一键更新（DSH 的版本区块只覆盖 registry 安装），只能卸载后重装。
+
+## 发布
+
+1. 改版本：`npm version patch`（或手改 `package.json` 的 `version`）并提交。
+2. 打标签并推送：`git tag -a v0.5.0 -m "0.5.0"; git push origin main --tags`
+3. 发布到 npm：`pnpm publish --access public`
+4. 客户端在插件页点**刷新**，就能看到「可更新到 0.5.0」。
+
+包名固定为 `@yang-zhenchen/dsh-balance`（`publishConfig.access` 已设为 `public`）；`dsh-plugin-balance` 是别人的包，不要用它发布。
 
 ## 启动失败：`Unexpected token '﻿' ... is not valid JSON`
 
@@ -136,10 +161,10 @@ C. 用 VS Code 打开该文件，右下角编码选择 **Save with Encoding → 
 
 ```powershell
 cd $env:USERPROFILE\.dsh\profiles\desktop
-pnpm remove dsh-plugin-balance
+pnpm remove @yang-zhenchen/dsh-balance
 ```
 
-并从 `dsh.profile.bundles` 中删除 `dsh-plugin-balance`。
+并从 `dsh.profile.bundles` 中删除 `@yang-zhenchen/dsh-balance`。
 
 ## 实现
 

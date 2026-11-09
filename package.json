@@ -1,6 +1,9 @@
 {
-  "name": "dsh-plugin-balance",
-  "version": "0.4.0",
+  "name": "@yang-zhenchen/dsh-balance",
+  "version": "0.4.1",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "DeepSeek account balance, DeepSeek peak/off-peak price hints, and a token-activity heatmap (local sessions or account-wide platform usage) pinned above the account avatar in the DeepSeek Harness sidebar.",
   "type": "module",
   "main": "lib/index.js",

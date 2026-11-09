@@ -1,4 +1,4 @@
-// Offline smoke test for dsh-plugin-balance: evaluates the browser bundle with a
+// Offline smoke test for @yang-zhenchen/dsh-balance: evaluates the browser bundle with a
 // fake module loader / React and asserts the slot registrations and render output.
 import fs from 'node:fs';
 import vm from 'node:vm';
@@ -85,7 +85,7 @@ vm.createContext(sandbox);
 vm.runInContext(source, sandbox, { filename: 'client.js' });
 
 const definition = sandbox.__definition;
-assert.equal(definition.id, 'dsh-plugin-balance');
+assert.equal(definition.id, '@yang-zhenchen/dsh-balance');
 
 const exportsObject = definition.factory((specifier) => {
   if (specifier === 'react') return React;
