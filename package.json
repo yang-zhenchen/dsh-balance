@@ -1,6 +1,6 @@
 {
   "name": "@yangzhenchen/dsh-balance",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "publishConfig": {
     "access": "public"
   },
@@ -56,6 +56,6 @@
     "url": "https://github.com/yang-zhenchen/dsh-balance/issues"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "~4.0.5"
+    "@deepseek-ai/cordis": "^4.0.5"
   }
 }
