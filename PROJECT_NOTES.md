@@ -1,6 +1,6 @@
 # dsh-balance 项目上下文
 
-给接手的 Agent（或未来的自己）看的速查。最后更新 2026-11-16，版本 **0.4.5**（npm 包名 `@yangzhenchen/dsh-balance`）。
+给接手的 Agent（或未来的自己）看的速查。最后更新 2026-11-16，版本 **0.4.6**（npm 包名 `@yangzhenchen/dsh-balance`）。
 
 ## 是什么
 
@@ -102,6 +102,7 @@ pnpm install
 - Client HMR 只在 `pnpm run dev:web` 运行时才会自动重建；普通桌面安装重启 DSH 最稳。
 - **千万不要**用 `ConvertTo-Json | Set-Content` 改 profile 的 `package.json`：Windows PowerShell 会写 BOM，DSH 启动时 `JSON.parse` 直接失败、界面打不开。用 `.NET` 的 `UTF8Encoding($false)` 或 `scripts/repair-profile.mjs`。
 - **DSH 升级后插件整条消失**：先看 peer 范围。DSH 0.2.2-rc.3 内置 Cordis 升到 **4.1.0**，旧的 `~4.0.5`（>=4.0.5 <4.1.0）不满足，启动兼容性检查直接拒绝整个 bundle，侧栏两行都不挂载；0.4.5 起改用 `^4.0.5`。排查命令：读 `node_modules/@deepseek-ai/cordis/package.json` 的版本，对照本包 `peerDependencies`。
+- **升级后余额显示「未登录」但实际已登录**：DSH 0.2.2-rc.3 把 `remote.account.watch` 的帧改成 `{ type, state }`（旧版直接是状态对象），旧代码读 `frame.value.status` 会得到 undefined。0.4.6 起用 `accountStatus()` 同时兼容两种形状。
 - 改 profile 后要 `pnpm install`（或手工维护 junction），否则依赖解析不到。
 - 重启 DSH 后如果行消失，先看 `~/.dsh/profiles/desktop/package.json` 是否可解析、`node_modules/@yangzhenchen/dsh-balance` 是否指向正确目录。
 - 发版：改 `package.json` 版本 → `git tag -a vX.Y.Z -m "X.Y.Z" && git push origin main --tags` → GitHub Actions（`.github/workflows/release.yml`，Trusted Publishing/OIDC，无需 token）发布。客户端插件页刷新后出现「可更新到 x.y.z」，一键更新（失败自动回滚）。git/link 安装没有这个版本区块。

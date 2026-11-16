@@ -228,6 +228,7 @@ const {
   isPeakAt,
   formatCountdown,
   switchClock,
+  accountStatus,
 } = exportsObject.__test;
 assert.equal(formatAmount('12.345', '¥'), '¥12.34');
 assert.equal(formatAmount('0.004', '¥'), '<¥0.01');
@@ -363,6 +364,15 @@ const bj = (year, month, day, hour, minute) => Date.UTC(year, month - 1, day, ho
   assert.equal(formatCountdown(90_000, fakeT), 'tariffMinutes{"count":2}');
   assert.equal(formatCountdown(133 * 60_000, fakeT), 'tariffHoursMinutes{"count":2,"minutes":13}');
   assert.equal(switchClock(bj(2026, 11, 9, 12, 0)), '12:00');
+}
+
+// Account state frames: 0.2.2-rc.3 wraps the snapshot as { type, state }.
+{
+  assert.equal(accountStatus({ value: { type: 'snapshot', state: { status: 'credential-stored' } } }), 'credential-stored');
+  assert.equal(accountStatus({ value: { type: 'credentials-changed', state: { status: 'signed-out' } } }), 'signed-out');
+  assert.equal(accountStatus({ value: { status: 'credential-stored' } }), 'credential-stored', 'old flat frames still work');
+  assert.equal(accountStatus({ value: null }), undefined);
+  assert.equal(accountStatus(undefined), undefined);
 }
 
 console.log('smoke test: ok');
