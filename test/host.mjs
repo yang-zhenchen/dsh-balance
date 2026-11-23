@@ -105,7 +105,7 @@ const accountCredentials = {
 };
 
 /** Invoke the registered route and parse its JSON body. */
-async function request(host, url, method = 'GET') {
+async function request(host, url, method = 'GET', peer) {
   const route = host.routes[0];
   const res = {
     statusCode: 0,
@@ -118,7 +118,7 @@ async function request(host, url, method = 'GET') {
       this.body = body ?? '';
     },
   };
-  await route.handler({ method, url, headers: {} }, res);
+  await route.handler({ method, url, headers: {} }, res, peer);
   return { status: res.statusCode, headers: res.headers, body: res.body === '' ? null : JSON.parse(res.body) };
 }
 
@@ -191,6 +191,12 @@ const rejected = await request(host, '/dsh-balance/usage');
 assert.equal(rejected.status, 401);
 assert.equal(rejected.body, null);
 host.setRejection(undefined);
+
+// DSH 0.2.2-rc.2+ admits the route before the handler and passes the Peer.
+const owned = await request(host, '/dsh-balance/usage', 'GET', { principal: 'owner' });
+assert.equal(owned.status, 200);
+const foreign = await request(host, '/dsh-balance/usage', 'GET', { principal: 'api' });
+assert.equal(foreign.status, 403);
 
 // Only GET is served.
 const wrongMethod = await request(host, '/dsh-balance/usage', 'POST');
