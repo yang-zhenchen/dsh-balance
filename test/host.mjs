@@ -193,10 +193,13 @@ assert.equal(rejected.body, null);
 host.setRejection(undefined);
 
 // DSH 0.2.2-rc.2+ admits the route before the handler and passes the Peer.
-const owned = await request(host, '/dsh-balance/usage', 'GET', { principal: 'owner' });
+// Principals are tagged values there; plain strings are the older shape.
+const owned = await request(host, '/dsh-balance/usage', 'GET', { principal: { kind: 'owner' } });
 assert.equal(owned.status, 200);
-const foreign = await request(host, '/dsh-balance/usage', 'GET', { principal: 'api' });
+const foreign = await request(host, '/dsh-balance/usage', 'GET', { principal: { kind: 'share-viewer' } });
 assert.equal(foreign.status, 403);
+const legacyOwner = await request(host, '/dsh-balance/usage', 'GET', { principal: 'owner' });
+assert.equal(legacyOwner.status, 200);
 
 // Only GET is served.
 const wrongMethod = await request(host, '/dsh-balance/usage', 'POST');
