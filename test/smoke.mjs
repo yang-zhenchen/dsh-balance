@@ -100,7 +100,7 @@ exportsObject.apply(ctx);
 assert.equal(registrations.length, 1, 'one slot entry holds both rows');
 assert.deepEqual(Object.keys(dictionaries.zh), Object.keys(dictionaries.en), 'zh and en cover the same keys');
 assert.equal(dictionaries.zh.usageLabel, 'Token 用量');
-assert.equal(dictionaries.en.usageModeTotal, 'Cumulative');
+assert.equal(dictionaries.en.usageTitle, 'Token activity');
 
 const registration = registrations[0];
 assert.equal(registration.options.name, 'sidebar.footer.action');
@@ -277,7 +277,7 @@ assert.deepEqual(usageBucket({ total: 5, input: '7' }), {
   assert.equal(buildCalendar({}).length, 0);
 }
 
-// Day, week, and cumulative views share one grid.
+// One grid, always colored by each day's own total.
 {
   const grid = buildCalendar({
     today: { date: '2026-10-28' },
@@ -287,22 +287,11 @@ assert.deepEqual(usageBucket({ total: 5, input: '7' }), {
       { date: '2026-10-28', total: 30, requests: 3 },
     ],
   });
-  const day = calendarMetric(grid, 'day');
-  assert.equal(day.values.at(-1)[0], 10);
-  assert.equal(day.values.at(-1)[2], 30);
-  assert.equal(day.values.at(-1)[3], null);
-  assert.equal(day.weekTotals.at(-1), 60);
-
-  const week = calendarMetric(grid, 'week');
-  assert.equal(week.weekTotals.at(-1), 60);
-  assert.equal(week.values.at(-1)[0], 60);
-  assert.equal(week.values.at(-1)[2], 60);
-
-  const cumulative = calendarMetric(grid, 'cumulative');
-  assert.equal(cumulative.values.at(-1)[0], 10);
-  assert.equal(cumulative.values.at(-1)[1], 30);
-  assert.equal(cumulative.values.at(-1)[2], 60);
-  assert.equal(cumulative.values.at(-1)[3], null);
+  const values = calendarMetric(grid);
+  assert.equal(values.at(-1)[0], 10);
+  assert.equal(values.at(-1)[1], 20);
+  assert.equal(values.at(-1)[2], 30);
+  assert.equal(values.at(-1)[3], null);
 
   const thresholds = levelThresholds([0, 0, 1, 2, 3, 4]);
   assert.deepEqual(thresholds, [1, 2, 3]);

@@ -1,10 +1,10 @@
 # dsh-balance 项目上下文
 
-给接手的 Agent（或未来的自己）看的速查。最后更新 2026-11-23，版本 **0.4.8**（npm 包名 `@yangzhenchen/dsh-balance`）。
+给接手的 Agent（或未来的自己）看的速查。最后更新 2026-11-27，版本 **0.4.9**（npm 包名 `@yangzhenchen/dsh-balance`）。
 
 ## 是什么
 
-DeepSeek Harness（DSH）插件：把 **DeepSeek 账户余额**固定在侧边栏底部、账号头像的**正上方一行**；再往上一行是 **Token 用量**，点开是 GitHub 贡献图样式的 53 周热力图（每天 / 每周 / 累计总量），可在 **本机 / 账号** 两个数据源之间切换。浏览器端只拿余额数字和聚合后的用量，账户 token 与原始会话日志都留在 Host。
+DeepSeek Harness（DSH）插件：把 **DeepSeek 账户余额**固定在侧边栏底部、账号头像的**正上方一行**；再往上一行是 **Token 用量**，点开是 GitHub 贡献图样式的 53 周热力图（每格就是当天用量），可在 **本机 / 账号** 两个数据源之间切换。浏览器端只拿余额数字和聚合后的用量，账户 token 与原始会话日志都留在 Host。
 
 - 仓库：https://github.com/yang-zhenchen/dsh-balance
 - npm：`@yangzhenchen/dsh-balance`（`publishConfig.access = public`；`dsh-plugin-balance` 已被别的作者占用，别用）
@@ -30,7 +30,7 @@ DSH 的 `desktop` profile 用 **link 方式**挂这个插件，不是从 npm 装
 - 未登录显示「未登录」，失败显示「点击重试」；悬停看充值/赠金/更新时间
 - 用量行：今日 token 总数（输入+输出+缓存读写），点击展开「Token 活动」面板
   - 53×7 日历热力图（quartile 分 4 档着色），月份刻度 + 图例
-  - 视图：每天 / 每周（按列着色）/ 累计总量（从范围起点累加）
+  - 热力图只有一种着色口径：每格 = 当天用量（0.4.9 去掉了「每周 / 累计总量」，因为它们按非当天值着色）
   - 数据源：**本机**（会话日志，精确到请求、含小时）/ **账号**（平台账号级用量，跨机器、只有按天 UTC、带 ¥ 费用）
   - 本机：今日 24 小时条带、今日输入/输出/缓存/请求/会话、近 7 / 30 天与总计
   - 账号：今日（UTC）/ 本月用量、今日与本月费用、输入/输出/缓存/请求、近 7 / 30 天与近 12 个月
@@ -104,6 +104,7 @@ pnpm install
 - **DSH 升级后插件整条消失**：先看 peer 范围。DSH 0.2.2-rc.3 内置 Cordis 升到 **4.1.0**，旧的 `~4.0.5`（>=4.0.5 <4.1.0）不满足，启动兼容性检查直接拒绝整个 bundle，侧栏两行都不挂载；0.4.5 起改用 `^4.0.5`。排查命令：读 `node_modules/@deepseek-ai/cordis/package.json` 的版本，对照本包 `peerDependencies`。
 - **升级后余额显示「未登录」但实际已登录**：DSH 0.2.2-rc.3 把 `remote.account.watch` 的帧改成 `{ type, state }`（旧版直接是状态对象），旧代码读 `frame.value.status` 会得到 undefined。0.4.6 起用 `accountStatus()` 同时兼容两种形状。
 - **Token 用量行读取失败、余额正常**：DSH 0.2.2-rc.2 起移除了 `connection.requestRejection`，WebServer 路由默认 `auth:'required'`，handler 签名变成 `(req, res, peer)`；旧代码调用 `requestRejection` 会抛错、每个请求 500。0.4.7 起用 `rejectionFor(req, peer)` 兼容新旧两套。注意 peer 的 principal 是**标签对象** `{ kind: 'owner' }`（不是字符串 `'owner'`），0.4.8 修正；写成字符串比较会把每个请求判成 403。
+- **热力图语义**：0.4.9 之前有「每周 / 累计总量」两个视图，它们按整周合计或累计值着色，导致热力图从左到右越来越深、悬停显示的是累计数而不是当天数（用户看到「今天 15.6 亿」其实是累计到当天的总数）。0.4.9 起只保留按天着色，悬停恒为当天用量与请求数，不悬停时显示范围内按天求和。
 - 改 profile 后要 `pnpm install`（或手工维护 junction），否则依赖解析不到。
 - 重启 DSH 后如果行消失，先看 `~/.dsh/profiles/desktop/package.json` 是否可解析、`node_modules/@yangzhenchen/dsh-balance` 是否指向正确目录。
 - 发版：改 `package.json` 版本 → `git tag -a vX.Y.Z -m "X.Y.Z" && git push origin main --tags` → GitHub Actions（`.github/workflows/release.yml`，Trusted Publishing/OIDC，无需 token）发布。客户端插件页刷新后出现「可更新到 x.y.z」，一键更新（失败自动回滚）。git/link 安装没有这个版本区块。
