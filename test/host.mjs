@@ -28,7 +28,7 @@ function fakeHost(records, logs, credentials = null) {
   let rejection = undefined;
   const ctx = {
     inject(deps, callback) {
-      assert.deepEqual([...deps], ['webServer', 'connection', 'sessionQuery']);
+      assert.deepEqual([...deps], ['webServer']);
       const cap = {
         effect(fn, label) {
           const dispose = fn();
@@ -139,9 +139,10 @@ const records = [
 const host = fakeHost(records, logs);
 apply(host.ctx);
 
-assert.equal(host.routes.length, 1);
+assert.equal(host.routes.length, 2);
 assert.equal(host.routes[0].kind, 'exact');
 assert.equal(host.routes[0].path, '/dsh-balance/usage');
+assert.equal(host.routes[1].path, '/dsh-balance/ping');
 assert.equal(host.listeners.length, 1);
 assert.equal(host.listeners[0].name, 'session/event');
 
